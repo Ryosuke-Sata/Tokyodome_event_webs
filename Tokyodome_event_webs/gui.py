@@ -9,7 +9,7 @@ import tokyodome_eventdata
 import train_troubledata
 import threading
 
-locale.setlocale(locale.LC_TIME, "ja")
+locale.setlocale(locale.LC_TIME, "ja_JP.UTF-8")
 jst = ZoneInfo("Asia/Tokyo")
 current_time = datetime.now(jst)
 
@@ -66,8 +66,8 @@ def update_status():
     status_label.config(text = f"ステータス : {counter}秒経過")
     counter += 1
     current_time = datetime.now(jst)
-    time.config(text = f"{current_time.strftime("%H:%M:%S")}")
-    date.config(text = f"{current_time.strftime("%Y年%m月%d日（%a）")}")
+    time.config(text = f"{current_time.strftime('%H:%M:%S')}")
+    date.config(text = f"{current_time.strftime('%Y年%m月%d日(%a)')}")
     root.after(1000, update_status)
 
 # 日付と時間の表示
@@ -84,13 +84,13 @@ def date_time_status():
     # 時間の表示
     time = tk.Label(
         time_frame,
-        text = f"{current_time.strftime("%H:%M:%S")}",
+        text = f"{current_time.strftime('%H:%M:%S')}",
         font = ("Yu Gothic UI", time_fontsize))
     time.place(relx = 0.5, rely = 0.5, anchor = "center")
     # 日付の表示
     date = tk.Label(
         time_frame,
-        text = f"{current_time.strftime("%Y年%m月%d日（%a）")}",
+        text = f"{current_time.strftime('%Y年%m月%d日(%a)')}",
         font = ("Yu Gothic UI", date_fontsize)
     )
     date.pack(anchor = "nw", padx = 20, pady = 10)
@@ -112,6 +112,7 @@ def read_eventdata():
 def current_event_status():
     global eventdata
     # ファイルの保存時間の取得
+    formatted_event_time = "----" 
     try:
         event_time_timestamp = os.path.getmtime(event_file_path)
         event_time_dt = dt.datetime.fromtimestamp(event_time_timestamp)
@@ -130,7 +131,12 @@ def current_event_status():
         relwidth = 2/3,
         relheight = 1/2
     )
-    if len(eventdata[current_time.day - 1]) <= 3:
+    if not eventdata or len(eventdata) < current_time.day:
+        event_kind = ""
+        event_name = "情報なし"
+        event_time = ""
+        event_name_fontsize = 70
+    elif len(eventdata[current_time.day - 1]) <= 3:
         event_kind = ""
         event_name = "予定なし"
         event_time = ""
@@ -152,7 +158,6 @@ def current_event_status():
         event_name_fontsize = 25
     
     # イベントのフォントサイズを，文字列の長さに応じて適切な値に変更する条件分岐を作成する
-    # イベント情報の更新時間について考える
     current_event_name = tk.Label(
         current_event_frame,
         text = event_name,
@@ -199,6 +204,7 @@ def read_traindata():
 def current_train_status():
     global traindata
     # ファイルの保存時間の取得
+    formatted_train_time = "----"
     try:
         train_time_timestamp = os.path.getmtime(train_file_path)
         train_time_dt = dt.datetime.fromtimestamp(train_time_timestamp)
@@ -226,13 +232,13 @@ def current_train_status():
     for i in range(len(traindata)):
         train_delay = tk.Label(
             current_train_frame,
-            text = f"・{traindata[i]["路線"]} : {traindata[i]["状況"]}",
+            text = f"・{traindata[i]['路線']} : {traindata[i]['状況']}",
             font = ("Yu Gothic UI", train_data_fontsize)
         )
         train_delay.pack(anchor = "nw", padx = 20, pady = 10)
         train_detail = tk.Label(
             current_train_frame,
-            text = f"{traindata[i]["詳細"]}",
+            text = f"{traindata[i]['詳細']}",
             font = ("Yu Gothic UI", train_delay_fontsize)
         )
         train_detail.pack(anchor = "nw", padx = 60, pady = 0)
